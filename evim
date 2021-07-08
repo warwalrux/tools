@@ -1,0 +1,15 @@
+#!/bin/bash
+function edit_secure() {
+    path=`readlink -f $1`
+    if [[ "$(echo $path | grep -q "infrastructure-puppet" && echo $?)" == "0" ]]; then
+        recips_file="/home/dfoulks/asf/infrastructure-puppet/data/hiera-eyaml-gpg.recipients"
+    elif [[ "$(echo $path | grep -q "infrastructure-p6" && echo $?)" == "0" ]]; then
+        recips_file="/home/dfoulks/asf/infrastructure-p6/data/hiera-eyaml-gpg.recipients"
+    else
+        echo "You're not in a repository I recognize"
+        exit 0
+    fi
+    eyaml edit -t -v -n gpg --gpg-always-trust --gpg-recipients-file $recips_file $path
+}
+
+edit_secure $1

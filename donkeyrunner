@@ -1,0 +1,2 @@
+#!/bin/bash
+donkey -f md5 $1

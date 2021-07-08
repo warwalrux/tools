@@ -1,0 +1,13 @@
+#!/usr/bin/python3 -B
+import requests
+import re
+import sys
+
+url = 'https://abuseipdb.com/check/'
+data = 'key=[e874d7654c8100ee118fcbdcc92308395a070092ca37f88526d4f102f1ff85a86751d9e07aa22c07]'
+x = requests.post(url + sys.argv[1], data)
+
+for line in x.iter_lines():
+    if re.search('Description', line.decode('utf8')) and re.search('times', line.decode('utf8')):
+        print(line.decode('utf8').split('"')[1])
+        print('    - ' + url) 

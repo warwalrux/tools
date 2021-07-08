@@ -1,0 +1,19 @@
+#!/bin/expect -f
+set timeout -1
+#log_user 0
+proc slurp {file} {
+    set fh [open $file r]
+    set ret [read $fh]
+    close $fh
+    return $ret
+}
+set passwd [slurp /home/dfoulks/.dfoulks.cred]
+spawn donkeyrunner $argv
+expect "Enter passphrase : "
+send -- "$passwd\r"
+expect -re "(.*)"
+#set outcome $expect_out(1,string)
+#puts $outcome
+#puts [open "/tmp/screen-exchange" "a+"] $outcome
+#spawn screen -X readbuf
+expect EOF

@@ -53,6 +53,7 @@ case $1 in
 		echo -e "$0 <list|update> (repo)\n"
 		echo -e "list\t\tlist available apt repos"
 		echo -e "list <repo>\tlist packages available in apt repo"
-		echo -e "update <repo>\tupdate the specified repo"
+		echo -e "update <repo>\tupdate package list for the specified repo"
+		echo -e "show <repo>\tshow repository data"
 		;;
 esac

@@ -1,10 +1,11 @@
 #!/bin/bash
+launchpad="~/asf"
 function edit_secure() {
     path=`readlink -f $1`
     if [[ "$(echo $path | grep -q "infrastructure-puppet" && echo $?)" == "0" ]]; then
-        recips_file="/home/dfoulks/asf/infrastructure-puppet/data/hiera-eyaml-gpg.recipients"
+        recips_file="$launchpad/infrastructure-puppet/data/hiera-eyaml-gpg.recipients"
     elif [[ "$(echo $path | grep -q "infrastructure-p6" && echo $?)" == "0" ]]; then
-        recips_file="/home/dfoulks/asf/infrastructure-p6/data/hiera-eyaml-gpg.recipients"
+        recips_file="$launchpad/infrastructure-p6/data/hiera-eyaml-gpg.recipients"
     else
         echo "You're not in a repository I recognize"
         exit 0

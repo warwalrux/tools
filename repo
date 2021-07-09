@@ -1,0 +1,58 @@
+#!/bin/bash
+
+update_repo() {
+	sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/$1.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+}
+
+list_packages() {
+	repo_domain=$(grep deb /etc/apt/sources.list.d/$1.list | awk '{print $3}' | awk -F'//' '{print $2}' | sed -e 's/\//_/g')
+	# Prioritize amd64 repos, maybe support i386 someday
+	repo_file=`ls /var/lib/apt/lists/ | grep Packages | grep -i amd64 | grep $repo_domain`
+	grep -h -P -o "^Package: \K.*" /var/lib/apt/lists/$repo_file | sort -u 
+
+}
+
+list_repos() {
+	for x in `ls /etc/apt/sources.list.d/ | grep "\.list$"`; do
+		basename $x .list
+	done
+}
+
+repo_info() {
+	raw=$(grep ^deb /etc/apt/sources.list.d/$1.list)
+	IFS=' '
+	read -ra REPO <<< "$raw"
+	if [ $(echo "${REPO[2]}" | grep http) ]; then
+		echo -e "DOMAIN:\t\t${REPO[2]}"
+	elif [ $(echo "${REPO[1]}" | grep http) ]; then
+		echo -e "DOMAIN:\t\t${REPO[1]}"
+	fi
+	echo -e "DISTRIBUTION:\t${REPO[-2]}"
+	echo -e "COMPONENT:\t${REPO[-1]}"
+}
+
+case $1 in
+	"list")
+		if [ $2 ] && [ -f /etc/apt/sources.list.d/$2.list ]; then
+			list_packages $2
+		else
+			list_repos
+		fi
+		;;
+	"update")
+		if [ $2 ] && [ -f /etc/apt/sources.list.d/$2.list ]; then
+			update_repo $2
+		fi
+		;;
+	"show")
+		if [ $2 ] && [ -f /etc/apt/sources.list.d/$2.list ]; then
+			repo_info $2
+		fi
+		;;
+	"help"|*)
+		echo -e "$0 <list|update> (repo)\n"
+		echo -e "list\t\tlist available apt repos"
+		echo -e "list <repo>\tlist packages available in apt repo"
+		echo -e "update <repo>\tupdate the specified repo"
+		;;
+esac

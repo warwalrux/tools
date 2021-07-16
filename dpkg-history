@@ -59,10 +59,10 @@ def ui(data):
     print("Index\t|  Job Date\t\t|  Transaction")
     print("----------------------------------------------------")
     for jobid in data.keys():
-        print str(jobid) + "\t|  " + data[jobid].keys()[0] + "\t|  " + ", ".join(data[jobid][data[jobid].keys()[0]]['actions'].keys())
+        print(str(jobid) + "\t|  " + data[jobid].keys()[0] + "\t|  " + ", ".join(data[jobid][data[jobid].keys()[0]]['actions'].keys()))
 #        print(str(jobid) + "\t|  " +  data[jobid].key()[0] )
     jobnum = raw_input("select your job by job index: ")
-    print json.dumps(data[int(jobnum)][data[int(jobnum)].keys()[0]]['actions'], indent=4)
+    print(json.dumps(data[int(jobnum)][data[int(jobnum)].keys()[0]]['actions'], indent=4))
     for key in data[int(jobnum)][data[int(jobnum)].keys()[0]]['actions'].keys():
         print(inversion[key]) 
     

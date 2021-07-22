@@ -1,72 +1,65 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 -B
 
-import sys
-import os
 import argparse
 import json
+import os
+import pprint
+import re
+import sys
+import tabulate
 
-inversion = {
-    'configure': 'reconfigure',
-    'install': 'purge',
-    'purge': 'install',
-    'remove': 'install',
-    'upgrade': 'downgrade'
-}
+DPKG_LOGFILE = "/var/log/dpkg.log"
+# Removed: startup, status
+ACTIONS = ["install", "remove", "upgrade" ]
+STATUSES = [ "not-installed", "config-files", "half-installed", "unpacked", "half-configured", "triggers-awaited", "triggers-pending", "installed" ]
+tableformat="fancy-grid"
 
-def getOpts () :
-    parser = argparse.ArgumentParser(description='dpkg-history transactional dpkg history view')
-    parser.add_argument('-j', '--job', help='Job ID by index')
-    args = parser.parse_args()
-    return args
 
-def main():
-    dpkghistory = {}
-    logfile = open("/var/log/dpkg.log", "r")
-    jobindex = 1
+class History():
+    def __init__(self):
+        self.jobs = {}
+        job_id = 1
+        if os.path.isfile(DPKG_LOGFILE):
+            history = {}
+            with open(DPKG_LOGFILE, 'rb') as f:
+                data = f.readlines()
+            f.close()
+            for record in data:
+                record = record.decode('utf8').rstrip().split()
+                
+                # Ignore the seconds field in the time string
+                record[1] = ':'.join([record[1].split(':')[0], record[1].split(':')[1]])
+                if record[0] not in history.keys():
+                    history[record[0]] = {}
+                if record[1] not in history[record[0]].keys():
+                    history[record[0]][record[1]] = []
+                history[record[0]][record[1]].append(record[2:])
 
-    index = []
-    for line in logfile.readlines():
-        linelist = line.split(' ')
-        time_formatted = linelist[1].split(':')[0] + ":" + linelist[1].split(':')[1]
-        linelist[1] = time_formatted
-        index.append(linelist)
+        for date in history.keys():
+            for time in history[date].keys():
+                self.jobs[job_id] = {}
+                self.jobs[job_id]['date'] = date
+                self.jobs[job_id]['time'] = time
+                self.jobs[job_id]['data'] = []
+                [[ self.jobs[job_id]['data'].append(line) for line in history[date][time] ]]
+                job_id += 1
+        
+    def _print_table(self, table):
+        headers = table[0]
+        table.pop(0)
+        print(tabulate.tabulate(table, headers, tablefmt=tableformat))
 
-    jobs = {}
-    for line in index:
-        time_key = line[0] + " " + line[1]
-        if time_key not in jobs:
-            jobs[time_key] = {
-                'actions': {},
-                'statuses': [],
-            }
-        if line[2] == "status":
-            jobs[time_key]['statuses'].append(line[3:len(line)])
-        elif line[2] != "trigproc" and line[2] != "startup":
-            action = { line[2]: line[3].split(':')[0] }
-            jobs[time_key]['actions'].update(action)
-    
-    job_index = {}
-    jobindex = 1
-    for key, value in jobs.items():
-        job_index[jobindex] = {
-            key: value
-        }
-        jobindex += 1
 
-    ui(job_index)
-
-def ui(data):
-    print("Index\t|  Job Date\t\t|  Transaction")
-    print("----------------------------------------------------")
-    for jobid in data.keys():
-        print(str(jobid) + "\t|  " + data[jobid].keys()[0] + "\t|  " + ", ".join(data[jobid][data[jobid].keys()[0]]['actions'].keys()))
-#        print(str(jobid) + "\t|  " +  data[jobid].key()[0] )
-    jobnum = raw_input("select your job by job index: ")
-    print(json.dumps(data[int(jobnum)][data[int(jobnum)].keys()[0]]['actions'], indent=4))
-    for key in data[int(jobnum)][data[int(jobnum)].keys()[0]]['actions'].keys():
-        print(inversion[key]) 
-    
+    def printJobs(self):
+        output = [[ "Job ID", "Date", "Action" ]]
+        for job in self.jobs:
+            t = [ job, self.jobs[job]['date'], []]
+            for line in self.jobs[job]['data']:
+                if line[0] in ACTIONS and line[0] not in t[2]:
+                    t[2].append(line[0])
+            output.append(t)
+        self._print_table(output)
 
 if __name__ == "__main__":
-	main()
-
+    history = History()
+    history.printJobs()

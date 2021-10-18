@@ -1,0 +1,13 @@
+[Unit]
+Description=NoSleep Keeper-Upper-ator-inator
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/nosleep
+User=www-data
+Group=www-data
+ExecStart=/opt/nosleep/nosleep.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

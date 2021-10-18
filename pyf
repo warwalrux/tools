@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+import argparse
+import bs4
+import json
+import pprint
+import requests
+
+class PyFetch:
+    def __init__(self, url):
+        self.resp = requests.get(url)
+        self.pp = pprint.PrettyPrinter()
+
+    def dump(self, outfile):
+        if outfile is not None:
+            with open(outfile, "w+") as f:
+                f.write(self.resp.content.decode())
+        else:
+            self.pp.pprint(self.resp.content.decode())
+
+    def printJson(self, outfile):
+        if outfile is not None:
+            with open(outfile, "w+") as f:
+                f.write(json.dumps(json.loads(self.resp.content.decode())))
+        else:
+            self.pp.pprint(json.loads(self.resp.content.decode()))
+
+    def fromHTML(self, outfile, html_search):
+        if outfile is not None:
+            html = bs4.BeautifulSoup(self.resp.content.decode(), "html.parser")
+            f = open(outfile, "w+")
+
+            if html_search is not None:
+                containers = html.find_all(html_search)
+                f.write(containers)
+            else:
+                f.write(html)
+        else:
+            html = bs4.BeautifulSoup(self.resp.content.decode(), "html.parser")
+            if html_search is not None:
+                containers = html.find_all(html_search)
+                self.pp.pprint(containers)
+            else:
+                self.pp.pprint(html)
+
+        
+
+def main(args):
+    n = PyFetch(args.url)
+    if args.pprint:
+        n.dump(args.outfile)
+    elif args.json:
+        n.printJson(args.outfile)
+    elif args.html:
+        n.fromHTML(args.outfile, args.html_search)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="PyF(etch)")
+    parser.add_argument("-o", "--outfile", default=None, help="Output file")
+    parser.add_argument("-u", "--url", required=True, help="URL")
+    action = parser.add_mutually_exclusive_group(required=True)
+    action.add_argument("-P", "--pprint", action="store_true", default=False, help="Pretty Print")
+    action.add_argument("-j", "--json", action="store_true", default=False, help="from json")
+    action.add_argument("-H", "--html", action="store_true", default=False, help="from html")
+    parser.add_argument("--html-search", default=None, help="Find HTML object in response output")
+
+    
+    args = parser.parse_args()
+    main(args)

@@ -1,5 +1,6 @@
 #!/bin/bash
-DNSFILE="/home/dfoulks/asf/infrastructure-trunk/dns/zones/generate.py"
+DNSFILE="/home/dfoulks/asf/infrastructure-trunk/dns/zones/inventory.conf"
+ZONEFILE="/home/dfoulks/asf/infrastructure-trunk/dns/zones/apache.org"
 if [ ! $1 ]; then echo "no host or action provided" && exit 1; fi
 
 # == The Worst Tool Ever ==
@@ -51,7 +52,11 @@ elif [[ "$1" == "ping" ]]; then
 #
 elif [[ "$1" == "what" ]]; then
 	host=$2
+	echo "--- $DNSFILE ---" 
 	grep $2 $DNSFILE
+	
+	echo -e "\n--- $ZONEFILE ---" 
+	grep $2 $ZONEFILE
 # - SSH to a ygridcore node
 #       asf node $xx // asf9$xx
 #

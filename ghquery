@@ -11,7 +11,9 @@ def getOpts():
     parser = argparse.ArgumentParser(description='github api caller')
     parser.add_argument('-t', '--tokenfile', help="github API token")
     parser.add_argument('-q', '--query', help="Query String")
-    parser.add_argument('-j', '--j2', help="jinja2 formatting string")
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument('-j', '--j2', help="jinja2 formatting string")
+    output.add_argument('-o', '--outfile', help="dump raw data to file")
     args = parser.parse_args()
     return args
 
@@ -26,15 +28,13 @@ def queryGH (query, head):
         print(t.json())
         sys.exit(1)
 
-#    for k, v in t.json().items():
-#        if k not in ["items"]:
-#            print("%s: %s" %(k, v))
-
     if t.json()["incomplete_results"]:
         print("Incomplete result set delivered.")
     else:
         results = t.json()
 
+    results["results"] = results["items"]
+    results.pop("items")
     return results
 
 def main () :
@@ -56,12 +56,15 @@ def main () :
 
     results = queryGH(args.query, head)
 
-    for result in results["items"]:
-        if args.j2:
-            t = jinja2.Template(args.j2)
-            print(t.render(result=result))
-        else:
-            print(result)
+    if args.outfile:
+        json.dump(results, open(args.outfile, "w+"))
+    else:
+        for result in results["items"]:
+            if args.j2:
+                t = jinja2.Template(args.j2)
+                print(t.render(result=result))
+            else:
+                print(json.dumps(result))
 
     print("Total Results: %s" % results["total_count"])
             

@@ -1,0 +1,30 @@
+#!/usr/bin/python3
+
+import argparse
+import ast
+import jinja2
+import json
+import pprint
+
+pp = pprint.PrettyPrinter()
+parser = argparse.ArgumentParser()
+parser.add_argument('-f', '--file', help="input file")
+parser.add_argument('-J', '--jinja', help="Jinja Template string")
+
+loader = parser.add_mutually_exclusive_group(required=True)
+loader.add_argument('-a', '--ast', action='store_true', help="Use AST Parser")
+loader.add_argument('-j', '--json', action='store_true', help="Use JSON parser")
+
+args = parser.parse_args()
+
+data = open(args.file, "r")
+
+if args.ast: 
+    results = ast.literal_eval(data.read())
+elif args.json:
+    d = [ datum for datum in data.read() ] 
+    print(d)
+#    results = json.dumps(data.read())
+
+for result in results:
+    pp.pprint(result)

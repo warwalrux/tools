@@ -8,7 +8,9 @@ list_packages() {
 	repo_domain=$(grep deb /etc/apt/sources.list.d/$1.list | awk '{print $3}' | awk -F'//' '{print $2}' | sed -e 's/\//_/g')
 	# Prioritize amd64 repos, maybe support i386 someday
 	repo_file=`ls /var/lib/apt/lists/ | grep Packages | grep -iv i386 | grep $repo_domain`
-	grep -h -P -o "^Package: \K.*" /var/lib/apt/lists/$repo_file | sort -u 
+	if [ $repo_file ]; then
+        grep -h -P -o "^Package: \K.*" /var/lib/apt/lists/$repo_file | sort -u 
+    fi
 
 }
 

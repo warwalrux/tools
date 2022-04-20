@@ -4,7 +4,10 @@ import argparse
 import ast
 import jinja2
 import json
+import pickle
 import pprint
+import sys
+import yaml
 
 pp = pprint.PrettyPrinter()
 
@@ -13,25 +16,34 @@ parser.add_argument('-f', '--file', help="input file")
 
 printer = parser.add_mutually_exclusive_group(required=True)
 printer.add_argument('-J', '--jinja', help="Jinja Template string")
-printer.add_argument('-P', '--pretty', action='store_true', help="Pretty Print string")
-
+printer.add_argument('-F', '--formatted', action='store_true', help="Pretty Print string")
+printer.add_argument('-P', '--picklefile', help="Dump as a pickled object")
 loader = parser.add_mutually_exclusive_group(required=True)
 loader.add_argument('-a', '--ast', action='store_true', help="Use AST Parser")
+loader.add_argument('-y', '--yaml', action='store_true', help="Use YAML Parser")
 loader.add_argument('-j', '--json', action='store_true', help="Use JSON parser")
+loader.add_argument('-p', '--pickle', action='store_true', help="Use JSON parser")
 
 args = parser.parse_args()
 
-data = open(args.file, 'r')
+data = open(args.file, 'rb')
 
 # Parse the file with the chosen Loader method
 if args.ast: 
     results = ast.literal_eval(data.read())
 elif args.json:
-    results = json.loads(data.read().replace("\'", "\""))
+    results = json.loads(data.read())
+elif args.yaml:
+    results = yaml.safe_load(data.read())
+elif args.pickle:
+    print(data)
+    results = pickle.load(data)
 
 # Output the file using the preferred output method
 if args.jinja:
     template = jinja2.Template(args.jinja)
     print(template.render(results=results))
+elif args.picklefile:
+    pickle.dump(results, open(args.picklefile, 'wb'))
 else:
     pp.pprint(results)

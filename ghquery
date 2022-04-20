@@ -59,7 +59,7 @@ def main () :
     if args.outfile:
         json.dump(results, open(args.outfile, "w+"))
     else:
-        for result in results["items"]:
+        for result in results["results"]:
             if args.j2:
                 t = jinja2.Template(args.j2)
                 print(t.render(result=result))

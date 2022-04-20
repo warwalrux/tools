@@ -70,8 +70,8 @@ elif [[ "$1" == "node" ]]; then
 elif [[ "$1" == "help" ]]; then
 	grep '^#' $0 | grep -v 'bash' | sed -e 's/#/  /g'
 
-# - Print asf hosts from ~/.asfhosts
-#   which is a text list of asf hosts
+# - Print manifest of asf hosts
+#   which is a yaml formatted list of asf hosts
 #       asf list
 #
 elif [[ "$1" == "list" ]]; then

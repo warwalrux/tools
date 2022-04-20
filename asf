@@ -75,8 +75,7 @@ elif [[ "$1" == "help" ]]; then
 #       asf list
 #
 elif [[ "$1" == "list" ]]; then
-	less ~/bin/.asfhosts
-
+    /usr/bin/svn cat https://svn.apache.org/repos/infra/infrastructure/trunk/dns/zones/inventory.yaml
 # - SSH to an apache.org host
 #       asf host
 #

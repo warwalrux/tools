@@ -4,6 +4,7 @@ import argparse
 import ast
 import jinja2
 import json
+import pathlib
 import pickle
 import pprint
 import sys
@@ -16,17 +17,22 @@ parser.add_argument('-f', '--file', help="input file")
 
 printer = parser.add_mutually_exclusive_group(required=True)
 printer.add_argument('-J', '--jinja', help="Jinja Template string")
-printer.add_argument('-F', '--formatted', action='store_true', help="Pretty Print string")
-printer.add_argument('-P', '--picklefile', help="Dump as a pickled object")
+printer.add_argument('-F', '--formatted', action='store_true', help="Print with formatting")
+printer.add_argument('--to-pickle', action='store_true', help="Dump as a pickled object")
+printer.add_argument('--to-yaml', action='store_true', help="Dump as a YAML object")
+printer.add_argument('--to-json', action='store_true', help="Dump as a JSON object")
+
 loader = parser.add_mutually_exclusive_group(required=True)
 loader.add_argument('-a', '--ast', action='store_true', help="Use AST Parser")
 loader.add_argument('-y', '--yaml', action='store_true', help="Use YAML Parser")
 loader.add_argument('-j', '--json', action='store_true', help="Use JSON parser")
-loader.add_argument('-p', '--pickle', action='store_true', help="Use JSON parser")
+loader.add_argument('-p', '--pickle', action='store_true', help="Use Pickle Object parser")
 
 args = parser.parse_args()
 
+
 data = open(args.file, 'rb')
+stem = pathlib.Path(args.file).stem
 
 # Parse the file with the chosen Loader method
 if args.ast: 
@@ -36,14 +42,24 @@ elif args.json:
 elif args.yaml:
     results = yaml.safe_load(data.read())
 elif args.pickle:
-    print(data)
     results = pickle.load(data)
+
 
 # Output the file using the preferred output method
 if args.jinja:
     template = jinja2.Template(args.jinja)
-    print(template.render(results=results))
-elif args.picklefile:
-    pickle.dump(results, open(args.picklefile, 'wb'))
-else:
+    print(template.render(data=results))
+elif args.formatted:
     pp.pprint(results)
+elif args.to_yaml:
+    outfile = open("%s.yaml"%stem, 'w+')
+    yaml.dump(results, outfile)
+    print("Dumped to %s" % outfile)
+elif args.to_json:
+    outfile = open("%s.json"%stem, 'w+')
+    json.dump(results, outfile)
+    print("Dumped to %s" % outfile)
+elif args.picklefile:
+    outfile = open("%s.picl"%stem)
+    pickle.dump(results, open(outfile, 'wb'))
+    print("Dumped to %s" % outfile)

@@ -10,7 +10,11 @@ url="https://api.github.com"
 def getOpts():
     parser = argparse.ArgumentParser(description='github api caller')
     parser.add_argument('-t', '--tokenfile', help="github API token")
-    parser.add_argument('-q', '--query', help="Query String")
+
+    searcher = parser.add_mutually_exclusive_group(required=True)
+    searcher.add_argument('-q', '--api', help="GitHub API Query String")
+    searcher.add_argument('-Q', '--gql', help="GraphQL API Query String")
+
     output = parser.add_mutually_exclusive_group()
     output.add_argument('-j', '--j2', help="jinja2 formatting string")
     output.add_argument('-o', '--outfile', help="dump raw data to file")
@@ -18,9 +22,6 @@ def getOpts():
     return args
 
 def queryGH (query, head):
-    """ Returns github group id when provided a github group slug
-        Requires org to search, github group slug, and the headers (with token embedded)"""
-
     # Determine how many pages of results we're looking at
     results = {}
     t = requests.get(url + "/search/code?per_page=100&q=" + query, headers=head)
@@ -37,6 +38,19 @@ def queryGH (query, head):
     results.pop("items")
     return results
 
+def GQLQueryGH (query, head):
+    results = {}
+    t = requests.get(url + "/graphql", json={'query': query}, headers=head)
+    if t.status_code != 200:
+        print(t.json())
+        sys.exit(1)
+
+    results = t.json()
+    
+    #results["results"] = results["items"]
+    #results.pop("items")
+    return results
+
 def main () :
     args = getOpts()
     
@@ -48,13 +62,12 @@ def main () :
     my_token = token_file.readlines()[0].rstrip()
     head={ 'Authorization': 'token ' + my_token, "content-type":"text" }
 
-    # Group we've chosen to grant read write access to for the new org.
-    if not args.query:
-        print("no github query string provided")
-        # INVOCATION ERROR
-        sys.exit(1)
-
-    results = queryGH(args.query, head)
+    if args.query:
+        results = queryGH(args.query, head)
+    elif args.gql:
+        results = GQLQueryGH(args.gql, head)
+        print(results)
+        sys.exit(0)
 
     if args.outfile:
         json.dump(results, open(args.outfile, "w+"))

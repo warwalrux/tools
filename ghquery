@@ -4,8 +4,11 @@ import requests
 import json
 import sys
 import jinja2
+import time
+import pprint
 
 url="https://api.github.com"
+pp = pprint.PrettyPrinter()
 
 def getOpts():
     parser = argparse.ArgumentParser(description='github api caller')
@@ -22,34 +25,64 @@ def getOpts():
 
     return args
 
-def queryGH (query, head):
+def queryGH (session, query):
     # Determine how many pages of results we're looking at
     results = {}
-    t = requests.get(url + "/search/code?per_page=100&q=" + query, headers=head)
-    if t.status_code != 200:
-        print(t.json())
-        sys.exit(1)
 
-    if t.json()["incomplete_results"]:
-        print("Incomplete result set delivered.")
+    r = session.get(url + "/search/code?per_page=100&q=%s" % query).json()
+    
+    if hasattr(r, "headers") and "link" in r["headers"]:
+        results['Page1'] = res
+        pages = int(results['Page1']["headers"]['link'].split(',')[1].split(';')[0].split('=')[-1].strip('>')) + 1
+        # r = []
+        for x in range(1, pages):
+            results['Page' + str(x)] = requests.get(url + "/search/code?p=%s&per_page=100&q=%s" % (x,query)).json()
     else:
-        results = t.json()
+        results = r
+
+#    for key in results.keys():
+#        for item in results[key]:
+#            print(item)
+                #repos.append(repo.get('name'))
+#    return repos
+
+#    if hasattr(t, "links") and "next" in t.links:
+#        page = 1
+#        results["page%s"%str(page)]
+#    print(t.links)
+
+#    if t.json()["incomplete_results"]:
+#        print("Incomplete result set delivered.")
+#    else:
+#        results = t.json()
 
     results["results"] = results["items"]
     results.pop("items")
     return results
 
-def GQLQueryGH (query, head, token):
-    results = {}
+def GQLQueryGH (session, query):
+    results = []
     # Access token as {{ token }}
     q = jinja2.Template(query)
-    t = requests.get(url + "/graphql", json={'query': q.render(token=token)}, headers=head)
+    nextPage = True
+    after = "null"
+    while nextPage:
+        t = session.post(url + "/graphql", json={"query": q.render(after=after)}).json()
+#        after = (
+#            '"%s"'
+#            % t.json()["data"]["organization"]["membersWithRole"]["pageInfo"][
+#                "endCursor"
+#            ]
+#        )
+        try:
+            nextPage = t["data"]["organization"]["repositories"]["pageInfo"]["endCursor"]["hasNextPage"]
+        except KeyError:
+            print("Nothing Doing... Taking a nap")
+            time.sleep(15)
 
-    if t.status_code != 200:
-        print(t.json())
-        sys.exit(1)
-    else:
-        results = t.json()
+            GQLQueryGH(session, query)
+
+        results.append(t)
     
     return results
 
@@ -62,10 +95,12 @@ def main () :
         sys.exit(1)
     token_file = open(args.tokenfile,"r")
     my_token = token_file.readlines()[0].rstrip()
-    head={ 'Authorization': 'token ' + my_token, "content-type":"text" }
+    s = requests.Session()
+    s.headers.update({ 'Authorization': 'token ' + my_token})
 
     if args.api:
-        results = queryGH(args.api, head)
+        s.headers.update({"content-type": "text"})
+        results = queryGH(s, args.api)
         if args.outfile:
             json.dump(results, open(args.outfile, "w+"))
         else:
@@ -77,7 +112,7 @@ def main () :
                     print(json.dumps(result))
         print("Total Results: %s" % results["total_count"])
     elif args.gql:
-        results = GQLQueryGH(args.gql, head, my_token)
+        results = GQLQueryGH(s, args.gql)
 
         if args.outfile:
             json.dump(results, open(args.outfile, "w+"))

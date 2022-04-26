@@ -30,7 +30,6 @@ loader.add_argument('-p', '--pickle', action='store_true', help="Use Pickle Obje
 
 args = parser.parse_args()
 
-
 data = open(args.file, 'rb')
 stem = pathlib.Path(args.file).stem
 
@@ -43,7 +42,6 @@ elif args.yaml:
     results = yaml.safe_load(data.read())
 elif args.pickle:
     results = pickle.load(data)
-
 
 # Output the file using the preferred output method
 if args.jinja:

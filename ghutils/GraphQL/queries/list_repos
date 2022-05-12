@@ -1,0 +1,16 @@
+{
+    organization(login: \"apache\") {
+        repositories(first: 100, after:{{ after }}) {
+            pageInfo {
+                hasNextPage
+                endCursor
+            }
+            edges {
+                node {
+                    name
+                    databaseId
+                }
+            }
+        }
+    }
+}

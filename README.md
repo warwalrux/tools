@@ -5,13 +5,14 @@ Warwalrux' tools for doing $things
 Warwalrux one-size-fits-all apache do-er.
 
 asf does a lot of basic system-based apache.org oriented $stuff
+run `asf help` for details
 
 ### checkip
 check abuseipdb.com for the provided IP address.
 The script returns the number of times it's been reported.
 
 ### dump
-a python based tool for examining / converting various object types.
+a python-based tool for examining / converting various object types with Jinja.
 
 ### evim  // Apache Tool
 hiera-eyaml wrapper evim (encrypted vim) 
@@ -34,7 +35,14 @@ bits.
 REQUIRES: ~/.$USER.cred with a valid OTP-MD5 password inside on a single line.
 
 ### ghquery
-Query GitHub / return result object using a Personal Access Token
+Query GitHub / return result object
+
+requires a Personal Access Token in a file somewhere.
+
+### ghutils
+
+ghutils is a collection of useful GitHub actions.
+it also holds GraphQL queries and stuff. (GraphQL is arcane AF) 
 
 ### rdns
 Python script that resolves IP addresses in output that is piped to it

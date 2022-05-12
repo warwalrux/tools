@@ -3,8 +3,8 @@ DNSFILE="/home/dfoulks/asf/infrastructure-trunk/dns/zones/inventory.conf"
 ZONEFILE="/home/dfoulks/asf/infrastructure-trunk/dns/zones/apache.org"
 if [ ! $1 ]; then echo "no host or action provided" && exit 1; fi
 
-# == The Worst Tool Ever ==
-#   "it's like hammer, but not as useful!"
+# == Not the Worst Tool Ever ==
+#   "it's like hammer!"
 #       - warwalrux
 #
 # --- the common infra functions this script streamlines ---

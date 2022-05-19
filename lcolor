@@ -3,6 +3,9 @@ colors=$(seq 30 37)
 light_colors=$(seq 90 97)
 styles=$(seq 0 7)
 
+echo "--- Usage Instructions ---"
+echo "\\e[\$style;\$color<TEXT>\\e[0m"
+
 echo "--- Regular Colors ---"
 echo "$(for color in $colors; do
     for style in $styles; do
@@ -10,6 +13,8 @@ echo "$(for color in $colors; do
         echo -e $string
     done
 done)" | column
+
+echo ""
 
 echo "--- Light Colors ---"
 echo "$(for color in $light_colors; do

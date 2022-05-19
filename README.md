@@ -25,6 +25,10 @@ evim interprets the path for git checkouts in $launchpad for the following repos
 this allows you to invoke eyaml-edit with all the fixins from anywhere in either repo
 to edit eyaml files.
 
+### merge
+a python based ditty that can load files containing one of several different common
+formats (ast, picl, yaml, json) and merge them using patented DEEP MERGE technology.
+
 ### nosleep
 Generic Mouse wiggler using xdotool
 

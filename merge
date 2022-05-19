@@ -12,7 +12,7 @@ import json
 import pickle
 import yaml  # noqa: I900 pyyaml
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 PP = pprint.PrettyPrinter()
 
@@ -99,7 +99,7 @@ def try_picl(data):
     try:
         d = pickle.load(data)
 
-    except EOFError:
+    except:
         logging.debug("Unpickling failed.")
         d = False
 
@@ -107,7 +107,7 @@ def try_picl(data):
 
 
 def load_data_file(path):
-    logging.info("Parsing: %s" % path)
+    logging.info("Parsing: %s for merge." % path)
     data = open(path, 'rb')
     checks = [ try_json, try_picl, try_yaml, try_ast ]
     for check in checks:
@@ -137,11 +137,12 @@ def main(argv):
 
     args = parser.parse_args(argv)
 
-    if args.toggle-listpref:
+    if args.toggle_listpref:
         global DEEP_MERGE_LIST_PREF
         DEEP_MERGE_LIST_PREF = "B"
 
     result = deep_merge(load_data_file(args.afile), load_data_file(args.bfile))
+    logging.info("Merged %s -> %s" % (args.bfile, args.afile))
 
     if not args.quiet:
         PP.pprint(result)

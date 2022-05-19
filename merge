@@ -132,10 +132,12 @@ def main(argv):
     parser.add_argument("-a", "--afile", required=True, help="input file containing dict a")
     parser.add_argument("-b", "--bfile", required=True, help="input file containing dict b")
     parser.add_argument("-q", "--quiet", action="store_true", help="silence output")
-    parser.add_argument("--prefer-b", action="store_true", help="set preference to bfile")
+
+    parser.add_argument("--toggle-listpref", action="store_true", help="set preference to bfile")
+
     args = parser.parse_args(argv)
 
-    if args.prefer_b:
+    if args.toggle-listpref:
         global DEEP_MERGE_LIST_PREF
         DEEP_MERGE_LIST_PREF = "B"
 

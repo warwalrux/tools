@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+
+""" Useful Python contains useful funcitons """
+
+import argparse
+import logging
+import pprint
+import sys
+
+import ast
+import json
+import pickle
+import yaml  # noqa: I900 pyyaml
+
+logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.INFO, filename='travisConvert.log')
+
+PP = pprint.PrettyPrinter()
+
+# YAML prettifier for those extra long lines
+def str_presenter(dumper, data):
+    represented_data = repr(data)
+    if (
+        r"\n" in represented_data
+        or r"\\" in represented_data
+        or len(represented_data) > 150
+    ):  # check for multiline string
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
+
+
+# deep_merge list append preference
+# Set to: "A" to prefer lists from dict A
+# Set to: "B" to prefer lists from dict B
+# Set to: None / Unset to error out.
+
+# Preference is set to B so that dist / arch processing works as intended.
+DEEP_MERGE_LIST_PREF = "A"
+
+
+def deep_merge(a, b, path=None):
+    "merges b into a"
+    if path is None:
+        path = []
+    for key in b:
+        if key in a:
+            if isinstance(a[key], dict) and isinstance(b[key], dict):
+                deep_merge(a[key], b[key], path + [str(key)])
+
+            elif isinstance(a[key], list) and isinstance(b[key], list):
+                logging.debug(
+                    'Deep Merge List Preference is set to "%s"', DEEP_MERGE_LIST_PREF
+                )
+                if DEEP_MERGE_LIST_PREF == "B":
+                    a[key] = [*b[key], *a[key]]
+                elif DEEP_MERGE_LIST_PREF == "A":
+                    a[key] = [*a[key], *b[key]]
+                else:
+                    logging.debug("Deep Merge List Preference is not set!")
+                    raise Exception("Conflict at %s" % ".".join(path + [str(key)]))
+            elif a[key] == b[key]:
+                pass  # same leaf value
+            else:
+                raise Exception("Conflict at %s" % ".".join(path + [str(key)]))
+        else:
+            a[key] = b[key]
+    return a
+
+
+def try_json(data):
+    logging.debug("Attempting to parse as JSON")
+    try:
+        d = json.loads(data.read())
+    except:
+        logging.debug("JSON load check failed.")
+        d = False
+    if d: return(d)
+
+def try_ast(data):
+    logging.debug("Attempting AST evaluation")
+    try:
+        d = ast.literal_eval(data.read())
+    except ValueError:
+        logging.debug("ASF Eval failed.")
+        d = False
+    if d: return(d)
+
+def try_yaml(data):
+    logging.debug("Attempting to parse as YAML")
+    try:
+        d = yaml.safe_load(data.read())
+    except:
+        logging.debug("YAML load check failed")
+        d = False
+
+    if d: return(d)
+
+def try_picl(data):
+    logging.debug("Attempting to parse as Pickle")
+    try:
+        d = pickle.load(data)
+
+    except EOFError:
+        logging.debug("Unpickling failed.")
+        d = False
+
+    if d: return(d)
+
+
+def load_data_file(path):
+    logging.info("Parsing: %s" % path)
+    data = open(path, 'rb')
+    checks = [ try_json, try_picl, try_yaml, try_ast ]
+    for check in checks:
+        data.seek(0)
+        d = check(data)
+        if d: return(d)
+
+def main(argv):
+    """ Run useful python bits """
+    # The known_key key list defines the order of operations
+    # Known keys should be in the order in which you want them
+    # processed / to appear in the final jobs listings.
+
+    # YAML Output Formatting
+    yaml.add_representer(str, str_presenter)
+    yaml.representer.SafeRepresenter.add_representer(str, str_presenter)
+
+    # Arguments
+    parser = argparse.ArgumentParser(
+        description="Travis to Github Actions Conversion script"
+    )
+    parser.add_argument("-a", "--afile", required=True, help="input file containing dict a")
+    parser.add_argument("-b", "--bfile", required=True, help="input file containing dict b")
+    parser.add_argument("-q", "--quiet", action="store_true", help="isilence ")
+    args = parser.parse_args(argv)
+
+    result = deep_merge(load_data_file(args.afile), load_data_file(args.bfile))
+
+    if not args.quiet:
+        PP.pprint(result)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

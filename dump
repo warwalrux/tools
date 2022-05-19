@@ -1,63 +1,65 @@
 #!/usr/bin/python3
 
+""" warwalrux object dumper """
+
 import argparse
 import ast
-import jinja2
 import json
 import pathlib
 import pickle
 import pprint
-import sys
 import yaml
 
-pp = pprint.PrettyPrinter()
+import jinja2
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--file', help="input file")
+PP = pprint.PrettyPrinter()
 
-printer = parser.add_mutually_exclusive_group(required=True)
-printer.add_argument('-J', '--jinja', help="Jinja Template string")
-printer.add_argument('-F', '--formatted', action='store_true', help="Print with formatting")
-printer.add_argument('--to-picl', action='store_true', help="Dump as a Pickled object")
-printer.add_argument('--to-yaml', action='store_true', help="Dump as a YAML object")
-printer.add_argument('--to-json', action='store_true', help="Dump as a JSON object")
+PARSER = argparse.ArgumentParser()
+PARSER.add_argument('-f', '--file', help="input file")
 
-loader = parser.add_mutually_exclusive_group(required=True)
-loader.add_argument('-a', '--ast', action='store_true', help="Use AST Parser")
-loader.add_argument('-y', '--yaml', action='store_true', help="Use YAML Parser")
-loader.add_argument('-j', '--json', action='store_true', help="Use JSON parser")
-loader.add_argument('-p', '--pickle', action='store_true', help="Use Pickle Object parser")
+PRINTER = PARSER.add_mutually_exclusive_group(required=True)
+PRINTER.add_argument('-J', '--jinja', help="Jinja Template string")
+PRINTER.add_argument('-F', '--formatted', action='store_true', help="Print with formatting")
+PRINTER.add_argument('--to-picl', action='store_true', help="Dump as a Pickled object")
+PRINTER.add_argument('--to-yaml', action='store_true', help="Dump as a YAML object")
+PRINTER.add_argument('--to-json', action='store_true', help="Dump as a JSON object")
 
-args = parser.parse_args()
+LOADER = PARSER.add_mutually_exclusive_group(required=True)
+LOADER.add_argument('-a', '--ast', action='store_true', help="Use AST Parser")
+LOADER.add_argument('-y', '--yaml', action='store_true', help="Use YAML Parser")
+LOADER.add_argument('-j', '--json', action='store_true', help="Use JSON PARSER")
+LOADER.add_argument('-p', '--pickle', action='store_true', help="Use Pickle Object PARSER")
 
-data = open(args.file, 'rb')
-stem = pathlib.Path(args.file).stem
+ARGS = PARSER.parse_args()
+
+DATA = open(ARGS.file, 'rb')
+STEM = pathlib.Path(ARGS.file).stem
 
 # Parse the file with the chosen Loader method
-if args.ast: 
-    results = ast.literal_eval(data.read())
-elif args.json:
-    results = json.loads(data.read())
-elif args.yaml:
-    results = yaml.safe_load(data.read())
-elif args.pickle:
-    results = pickle.load(data)
+if ARGS.ast:
+    RESULTS = ast.literal_eval(DATA.read())
+elif ARGS.json:
+    RESULTS = json.loads(DATA.read())
+elif ARGS.yaml:
+    RESULTS = yaml.safe_load(DATA.read())
+elif ARGS.pickle:
+    RESULTS = pickle.load(DATA)
 
 # Output the file using the preferred output method
-if args.jinja:
-    template = jinja2.Template(args.jinja)
-    print(template.render(data=results))
-elif args.formatted:
-    pp.pprint(results)
-elif args.to_yaml:
-    outfile = open("%s.yaml"%stem, 'w+')
-    yaml.dump(results, outfile)
-    print("Dumped to %s" % outfile.name)
-elif args.to_json:
-    outfile = open("%s.json"%stem, 'w+')
-    json.dump(results, outfile)
-    print("Dumped to %s" % outfile.name)
-elif args.to_picl:
-    outfile = open("%s.picl"%stem, 'w+b')
-    pickle.dump(results, outfile)
-    print("Dumped to %s" % outfile.name)
+if ARGS.jinja:
+    TEMPLATE = jinja2.Template(ARGS.jinja)
+    print(TEMPLATE.render(DATA=RESULTS))
+elif ARGS.formatted:
+    PP.pprint(RESULTS)
+elif ARGS.to_yaml:
+    OUTFILE = open("%s.yaml"%STEM, 'w+')
+    yaml.dump(RESULTS, OUTFILE)
+    print("Dumped to %s" % OUTFILE.name)
+elif ARGS.to_json:
+    OUTFILE = open("%s.json"%STEM, 'w+')
+    json.dump(RESULTS, OUTFILE)
+    print("Dumped to %s" % OUTFILE.name)
+elif ARGS.to_picl:
+    OUTFILE = open("%s.picl"%STEM, 'w+b')
+    pickle.dump(RESULTS, OUTFILE)
+    print("Dumped to %s" % OUTFILE.name)

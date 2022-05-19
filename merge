@@ -13,7 +13,6 @@ import pickle
 import yaml  # noqa: I900 pyyaml
 
 logging.basicConfig(level=logging.DEBUG)
-# logging.basicConfig(level=logging.INFO, filename='travisConvert.log')
 
 PP = pprint.PrettyPrinter()
 
@@ -132,14 +131,18 @@ def main(argv):
     )
     parser.add_argument("-a", "--afile", required=True, help="input file containing dict a")
     parser.add_argument("-b", "--bfile", required=True, help="input file containing dict b")
-    parser.add_argument("-q", "--quiet", action="store_true", help="isilence ")
+    parser.add_argument("-q", "--quiet", action="store_true", help="silence output")
+    parser.add_argument("--prefer-b", action="store_true", help="set preference to bfile")
     args = parser.parse_args(argv)
+
+    if args.prefer_b:
+        global DEEP_MERGE_LIST_PREF
+        DEEP_MERGE_LIST_PREF = "B"
 
     result = deep_merge(load_data_file(args.afile), load_data_file(args.bfile))
 
     if not args.quiet:
         PP.pprint(result)
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])

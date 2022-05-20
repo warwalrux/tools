@@ -48,7 +48,7 @@ elif ARGS.pickle:
 # Output the file using the preferred output method
 if ARGS.jinja:
     TEMPLATE = jinja2.Template(ARGS.jinja)
-    print(TEMPLATE.render(DATA=RESULTS))
+    print(TEMPLATE.render(data=RESULTS))
 elif ARGS.formatted:
     PP.pprint(RESULTS)
 elif ARGS.to_yaml:

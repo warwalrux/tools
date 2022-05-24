@@ -1,5 +1,5 @@
 #!/bin/bash
-launchpad="~/asf"
+launchpad="/home/$USER/asf"
 function edit_secure() {
     path=`readlink -f $1`
     if [[ "$(echo $path | grep -q "infrastructure-puppet" && echo $?)" == "0" ]]; then

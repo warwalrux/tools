@@ -54,3 +54,10 @@ Python script that resolves IP addresses in output that is piped to it
 ### repo
 An Apt repository tool that allows you to manage repositories individually
 list, update, and search for packages by repo, for the easy-making of life.
+
+### pic-sort
+
+pic-sort is a script that leverages exif utilities and and heic converter to rename and
+organize jpg and heic files. for instructions: run the script with no arguments.
+
+REQUIRES: exif, heif-gdk-pixbuf

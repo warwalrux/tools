@@ -1,0 +1,45 @@
+#!/bin/bash
+EXIF=$(which exif)
+evaldir=$(pwd)
+
+# Rename all of the wonky uppercase JPG files to standardize the file endings.
+find $evaldir -name "*.JPG" -exec bash -c 'mv "$0" "${0//JPG/jpg/}"' {} \;
+
+if [[ "$1" == "exif" ]]; then
+    for x in `IFS=$'\n' ls $evaldir/*.jpg`; do
+        if [[ "$(exif $x | grep -q "Date and Time (Origi"; echo $?)" == "0" ]]; then
+            newname=$(exif $x | grep $SEARCHTERM | awk -F'|' '{print $NF}' | sed -e 's/ /_/g' -e 's/:/-/g')
+            picpath=$(echo $newname | awk -F'-' '{print $1"/"$2}')
+            if [ ! -d $picpath ]; then
+                mkdir -p $picpath
+            fi
+            mv -v $x $picpath/$newname
+        elif [[ "$(exif $x | grep -q "Date and Time"; echo $?)" == "0" ]]; then
+            newname=$(exif $x | grep $SEARCHTERM | awk -F'|' '{print $NF}' | sed -e 's/ /_/g' -e 's/:/-/g')
+            picpath=$(echo $newname | awk -F'-' '{print $1"/"$2}')
+            if [ ! -d $picpath ]; then
+                mkdir -p $picpath
+            fi
+            mv -v $x $picpath/$newname
+        else
+            echo "no exif date for $name"
+            continue
+        fi
+    done
+
+elif [[ "$1" == "name" ]]; then
+    for x in `IFS=$'\n' ls $evaldir/*.png`; do
+        name=`echo $x | awk -F'/' '{print $NF}'`
+        picpath=$(echo $name | awk -F'-' '{print $1"/"$2}')
+        if [ ! -d $picpath ]; then
+            mkdir -p $picpath
+        fi
+        mv -v $name $picpath/$name
+    done
+
+elif [[ "$1" == "convert-heic" ]]; then
+    for file in $evaldir/*.HEIC; do heif-convert $file ${file/%.HEIC/.JPG}; done
+
+else
+    echo "$0 <exif|name|convert-heic>"
+    echo "This script will loop over all files in the current firectory and organize them accordingly. JPG's get renamed using exif data, HEIC files get converted to JPGs and once renamed all files can be organized by date"

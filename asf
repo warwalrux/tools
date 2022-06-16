@@ -29,7 +29,7 @@ elif [[ "$1" == "pull" ]]; then
 	host="$2.apache.org"
 	src=$3
 	dest=$4
-	scp dfoulks@$host:$src $dest
+    rsync -rv --rsync-path="sudo rsync" $host:$src $dest
 
 # - Push files
 #       asf push src host dest
@@ -38,7 +38,7 @@ elif [[ "$1" == "push" ]]; then
 	src=$2
 	host="$3.apache.org"
 	dest=$4
-	scp $src dfoulks@$host:/$dest
+    rsync -rv --rsync-path="sudo rsync" $src $host:$dest
 
 # - Ping an apache.org host
 #       asf ping host

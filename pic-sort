@@ -42,4 +42,9 @@ elif [[ "$1" == "convert-heic" ]]; then
 
 else
     echo "$0 <exif|name|convert-heic>"
-    echo "This script will loop over all files in the current firectory and organize them accordingly. JPG's get renamed using exif data, HEIC files get converted to JPGs and once renamed all files can be organized by date"
+    echo "
+This script will loop over all files in the current
+firectory and organize them accordingly. JPG's get
+renamed using exif data, HEIC files get converted to
+JPGs and once renamed all files can be organized by date"
+fi

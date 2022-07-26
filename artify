@@ -1,0 +1,86 @@
+#!/bin/bash
+
+FIGLET=$(which figlet)
+JP2A=$(which jp2a)
+
+FIGFONTS="/usr/share/figlet/"
+
+HELPMSG="
+ARTIFY -- Convert Junk to ASCII Junk!
+
+$0 (<-i|--image>/<-t|--text>) ARG 
+
+-i / --image        image file
+-t / --text         text string
+-o / --ascii-chars  character pallet for image conversion
+-l / --list-fonts   list ascii text fonts
+-d / --debug        debug switch
+"
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+    -i|--image)
+        IMAGE="$2"
+        shift # past argument
+        shift # past value
+        ;;
+    -t|--text)
+        TEXT="$2"
+        shift # past argument
+        shift # past value
+        ;;
+    --font)
+        FONT="$2"
+        shift # past argument
+        shift # past value
+        ;;
+    -o|--ascii-chars)
+        ASCII_CHARS="$2"
+        shift # past argument
+        shift # past value
+        ;;
+    -d|--debug)
+        DEBUG=true
+        shift
+        ;;
+    -l|--list-fonts)
+        LISTFONTS=true
+        shift
+        ;;
+    *)
+        echo "$HELPMSG"
+        exit 0
+        ;;
+    esac
+done
+
+from_txt () {
+    if [ $LISTFONTS ]; then
+        for font in `ls /usr/share/figlet/*.flf | awk -F'/' '{print $NF}' | sed -e 's/.flf//'`; do
+            echo $font
+        done
+        return
+    fi
+    FIG_ARGS=""
+    [ $FONT ] && FIG_ARGS="$FIG_ARGS -f $FIGFONTS/$FONT"
+
+    $FIGLET $FIG_ARGS "$TEXT"
+}
+
+from_img () {
+    JP2A_ARGS=""
+    [ $ASCII_CHARS ] && J2PA_ARGS="$JP2A_ARGS --chars=\" $ASCII_CHARS\"" || echo "Image conversion needs character palette"
+    [ ! -f $IMAGE ] && echo "File not found!" && exit 1
+    echo $JP2A_ARGS
+    #$JP2A $JP2A_ARGS $IMAGE
+}
+
+if [ ${IMAGE} ] && [ ${TEXTSTRING} ]; then
+    echo "Specify EITHER --text OR --image for ascii conversion"
+elif [ ${IMAGE} ]; then
+    from_img
+elif [ ${TEXT} ]; then
+    from_txt
+else
+    echo "Please specify either --image or --text"
+fi

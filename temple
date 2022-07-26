@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+
+import argparse
+import jinja2
+import yaml
+
+PARSER = argparse.ArgumentParser()
+PARSER.add_argument('-t', '--template', help="template file")
+PARSER.add_argument('-f', '--datafile', help="data file")
+PARSER.add_argument('-o', '--outfile', help="output file")
+ARGS = PARSER.parse_args()
+
+DATA = yaml.safe_load(open(ARGS.datafile, 'rb').read())
+
+TEMPLATE = jinja2.Template(open(ARGS.template, 'r').read())
+print(TEMPLATE.render(data=DATA))

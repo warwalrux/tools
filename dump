@@ -28,6 +28,7 @@ LOADER = PARSER.add_mutually_exclusive_group(required=True)
 LOADER.add_argument('-a', '--ast', action='store_true', help="Use AST Parser")
 LOADER.add_argument('-y', '--yaml', action='store_true', help="Use YAML Parser")
 LOADER.add_argument('-j', '--json', action='store_true', help="Use JSON PARSER")
+LOADER.add_argument('-H', '--html', action='store_true', help="Use JSON PARSER")
 LOADER.add_argument('-p', '--pickle', action='store_true', help="Use Pickle Object PARSER")
 
 ARGS = PARSER.parse_args()

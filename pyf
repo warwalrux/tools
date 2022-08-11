@@ -32,13 +32,13 @@ class PyFetch:
                 containers = html.find_all(html_search)
                 f.write(containers)
             else:
-                f.write(html)
+                f.write(str(html))
         else:
             if html_search is not None:
                 containers = html.find_all(html_search)
                 self.pp.pprint(containers)
             else:
-                self.pp.pprint(html)
+                self.pp.pprint(str(html))
 
         
 

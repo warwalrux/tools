@@ -1,16 +1,20 @@
 #!/bin/bash
 launchpad="/home/$USER/asf"
+hieraeyaml=false
+
 function edit_secure() {
     path=`readlink -f $1`
-    if [[ "$(echo $path | grep -q "infrastructure-puppet" && echo $?)" == "0" ]]; then
-        recips_file="$launchpad/infrastructure-puppet/data/hiera-eyaml-gpg.recipients"
-    elif [[ "$(echo $path | grep -q "infrastructure-p6" && echo $?)" == "0" ]]; then
+    if [[ "$(echo $path | grep -q "infrastructure-p6" && echo $?)" == "0" ]]; then
         recips_file="$launchpad/infrastructure-p6/data/hiera-eyaml-gpg.recipients"
     else
         echo "You're not in a repository I recognize"
         exit 0
     fi
-    eyaml decrypt -n gpg --gpg-always-trust --gpg-recipients-file $recips_file -f $path
+    if [ $hieraeyaml ]; then
+        eyaml decrypt -n gpg --gpg-always-trust --gpg-recipients-file $recips_file -f $path
+    else
+        echo "I have no other encryption mechanisms configured!"
+    fi
 }
 
 edit_secure $1

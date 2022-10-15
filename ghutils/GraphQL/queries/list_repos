@@ -1,6 +1,6 @@
 {
-    organization(login: \"apache\") {
-        repositories(first: 100, after:{{ after }}) {
+    organization(login: "apache") {
+        repository(first: 100, "after":{{ after }}) {
             pageInfo {
                 hasNextPage
                 endCursor

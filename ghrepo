@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import argparse
 import requests
+import jinja2
 import json
 import sys
 
@@ -14,6 +15,7 @@ def getOpts():
     parser.add_argument("-o", "--org", help="repo owner")
     parser.add_argument("-r", "--repo", help="token file")
     parser.add_argument("-f", "--format", action="store_true", help="formatted output")
+    parser.add_argument("-j", "--j2", help="Jinja2 formatted output")
     args = parser.parse_args()
     return args
 
@@ -51,6 +53,9 @@ def main():
     else:
         if args.format:
             print(json.dumps(has_repo, indent=4, sort_keys=True))
+        elif args.j2:
+            t = jinja2.Template(args.j2)
+            print(t.render(repo=has_repo))
         else:
             print(has_repo)
             return has_repo

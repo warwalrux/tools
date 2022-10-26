@@ -7,6 +7,7 @@ import jinja2
 import time
 import pprint
 
+github_timewait = 60
 url="https://api.github.com"
 pp = pprint.PrettyPrinter()
 
@@ -29,16 +30,27 @@ def queryGH (session, query):
     # Determine how many pages of results we're looking at
     results = {}
 
-    r = session.get(url + "/search/code?per_page=100&q=%s" % query).json()
-    
-    if hasattr(r, "headers") and "link" in r["headers"]:
-        results['Page1'] = res
-        pages = int(results['Page1']["headers"]['link'].split(',')[1].split(';')[0].split('=')[-1].strip('>')) + 1
-        # r = []
-        for x in range(1, pages):
-            results['Page' + str(x)] = requests.get(url + "/search/code?p=%s&per_page=100&q=%s" % (x,query)).json()
-    else:
-        results = r
+    r = session.get(url + "/search/code?per_page=100&page=1&q=%s" % query)
+    res = r.json()
+    pagenum = 1
+    results['Page%s'%(pagenum)] = res
+    while 'next' in r.links.keys():
+        pagenum+=1
+        print("Success! moving on...")
+        time.sleep(github_timewait)
+        r = session.get(r.links['next']['url'])
+        res = r.json()
+        results['Page%s'%(pagenum)] = res
+
+
+#    if hasattr(r, "headers") and "link" in r["headers"]:
+#        results['Page1'] = res
+#        pages = int(results['Page1']["headers"]['link'].split(',')[1].split(';')[0].split('=')[-1].strip('>')) + 1
+#        # r = []
+#        for x in range(1, pages):
+#            results['Page' + str(x)] = requests.get(url + "/search/code?p=%s&per_page=100&q=%s" % (x,query)).json()
+#    else:
+#        results = r
 
 #    for key in results.keys():
 #        for item in results[key]:
@@ -56,9 +68,9 @@ def queryGH (session, query):
 #    else:
 #        results = t.json()
 
-    print(results)
-    results["results"] = results["items"]
-    results.pop("items")
+#    print(results)
+#    results["results"] = results["items"]
+#    results.pop("items")
     return results
 
 def GQLQueryGH (session, query):

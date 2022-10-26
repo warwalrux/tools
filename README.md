@@ -14,15 +14,15 @@ The script returns the number of times it's been reported.
 ### dump
 a python-based tool for examining / converting various object types with Jinja.
 
-### evim  // Apache Tool
-hiera-eyaml wrapper evim (encrypted vim) 
+### evim + ecat // Apache Tool
+hiera-eyaml wrapper evim (encrypted vim) and ecat (encrypted cat) 
 *NB: which doesn't _actually_ specify vim, just the default system editor --*
 
-evim interprets the path for git checkouts in $launchpad for the following repos:
+evim & ecat interpret the path for git checkouts in $launchpad for the following repos:
 	- github.com/apache/infrastructure-p6
 	- github.com/apache/infrastrucure-puppet
 
-this allows you to invoke eyaml-edit with all the fixins from anywhere in either repo
+this allows you to invoke eyaml-edit or eyaml-cat with all the fixins from anywhere in either repo
 to edit eyaml files.
 
 ### merge
@@ -40,6 +40,11 @@ REQUIRES: ~/.$USER.cred with a valid OTP-MD5 password inside on a single line.
 
 ### ghquery
 Query GitHub / return result object
+
+requires a Personal Access Token in a file somewhere.
+
+### ghrepo
+Query github for a single repository object
 
 requires a Personal Access Token in a file somewhere.
 

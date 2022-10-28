@@ -4,6 +4,7 @@
 
 import argparse
 import ast
+import configparser
 import json
 import pathlib
 import pickle
@@ -16,6 +17,7 @@ PP = pprint.PrettyPrinter()
 
 PARSER = argparse.ArgumentParser()
 PARSER.add_argument('-f', '--file', help="input file")
+PARSER.add_argument('-d', '--debug', action='store_true', help="debug switch")
 
 PRINTER = PARSER.add_mutually_exclusive_group(required=True)
 PRINTER.add_argument('-J', '--jinja', help="Jinja Template string")
@@ -26,9 +28,10 @@ PRINTER.add_argument('--to-json', action='store_true', help="Dump as a JSON obje
 
 LOADER = PARSER.add_mutually_exclusive_group(required=True)
 LOADER.add_argument('-a', '--ast', action='store_true', help="Use AST Parser")
+LOADER.add_argument('-c', '--config', action='store_true', help="Use ConfigParser")
 LOADER.add_argument('-y', '--yaml', action='store_true', help="Use YAML Parser")
 LOADER.add_argument('-j', '--json', action='store_true', help="Use JSON PARSER")
-LOADER.add_argument('-H', '--html', action='store_true', help="Use JSON PARSER")
+LOADER.add_argument('-H', '--html', action='store_true', help="Use HTML PARSER")
 LOADER.add_argument('-p', '--pickle', action='store_true', help="Use Pickle Object PARSER")
 
 ARGS = PARSER.parse_args()
@@ -45,13 +48,20 @@ elif ARGS.yaml:
     RESULTS = yaml.safe_load(DATA.read())
 elif ARGS.pickle:
     RESULTS = pickle.load(DATA)
+elif ARGS.config:
+    RESULTS = configparser.ConfigParser()
+    RESULTS.read(ARGS.file)
 
 # Output the file using the preferred output method
 if ARGS.jinja:
     TEMPLATE = jinja2.Template(ARGS.jinja)
     print(TEMPLATE.render(data=RESULTS))
 elif ARGS.formatted:
-    PP.pprint(RESULTS)
+    if ARGS.debug:
+        print(dir(RESULTS))
+        print(RESULTS.read_dict())
+    else:
+        PP.pprint(RESULTS)
 elif ARGS.to_yaml:
     OUTFILE = open("%s.yaml"%STEM, 'w+')
     yaml.dump(RESULTS, OUTFILE)

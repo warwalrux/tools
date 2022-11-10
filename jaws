@@ -1,0 +1,64 @@
+#!/usr/bin/python3 -B
+import argparse
+import base64
+import requests
+import json
+import sys
+import jinja2
+import time
+import pprint
+
+github_timewait = 60
+url="https://issues.apache.org/jira/rest/api/latest"
+pp = pprint.PrettyPrinter()
+
+def getOpts():
+    parser = argparse.ArgumentParser(description='github api caller')
+    parser.add_argument('-l', '--login', required=True, help="login user")
+    parser.add_argument('-t', '--tokenfile', required=True, help="tokenfile")
+
+    searcher = parser.add_mutually_exclusive_group(required=True)
+    searcher.add_argument('-q', '--query', help="Jira API Query String")
+    
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument('-J', '--j2', help="jinja2 formatting string")
+    output.add_argument('-O', '--outfile', help="dump raw data to file")
+    output.add_argument('-F', '--formatted', action="store_true", help="Pretty Print data")
+    args = parser.parse_args()
+
+    return args
+
+def main () :
+    args = getOpts()
+    
+    # Check token stuffs
+    token = open(args.tokenfile).read().strip()
+
+    s = requests.Session()
+    # tokenstring = "%s:%s" % (args.login, token)
+    # b_token = bytes(tokenstring, 'utf-8')
+    authheader = "Bearer " + token
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": authheader,
+    }
+    s.headers.update(headers)
+
+    if args.query:
+        results = s.get("%s/%s"%(url, args.query)).json()
+        if args.outfile:
+            json.dump(results, open(args.outfile, "w+"))
+        else:
+            if args.j2:
+                t = jinja2.Template(args.j2)
+                print(t.render(result=result))
+            elif args.formatted:
+                pp = pprint.PrettyPrinter()
+                pp.pprint(results)
+            else:
+                print(results)
+
+
+if __name__ == "__main__":
+    main()

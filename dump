@@ -4,12 +4,14 @@
 
 import argparse
 import ast
+import bs4
 import configparser
 import json
 import pathlib
 import pickle
 import pprint
 import yaml
+import sys
 
 import jinja2
 
@@ -19,13 +21,6 @@ PARSER = argparse.ArgumentParser()
 PARSER.add_argument('-f', '--file', help="input file")
 PARSER.add_argument('-d', '--debug', action='store_true', help="debug switch")
 
-PRINTER = PARSER.add_mutually_exclusive_group(required=True)
-PRINTER.add_argument('-J', '--jinja', help="Jinja Template string")
-PRINTER.add_argument('-F', '--formatted', action='store_true', help="Print with formatting")
-PRINTER.add_argument('--to-picl', action='store_true', help="Dump as a Pickled object")
-PRINTER.add_argument('--to-yaml', action='store_true', help="Dump as a YAML object")
-PRINTER.add_argument('--to-json', action='store_true', help="Dump as a JSON object")
-
 LOADER = PARSER.add_mutually_exclusive_group(required=True)
 LOADER.add_argument('-a', '--ast', action='store_true', help="Use AST Parser")
 LOADER.add_argument('-c', '--config', action='store_true', help="Use ConfigParser")
@@ -34,10 +29,20 @@ LOADER.add_argument('-j', '--json', action='store_true', help="Use JSON PARSER")
 LOADER.add_argument('-H', '--html', action='store_true', help="Use HTML PARSER")
 LOADER.add_argument('-p', '--pickle', action='store_true', help="Use Pickle Object PARSER")
 
+PRINTER = PARSER.add_mutually_exclusive_group(required=True)
+PRINTER.add_argument('-J', '--jinja', help="Jinja Template string")
+PRINTER.add_argument('-F', '--formatted', action='store_true', help="Print with formatting")
+PRINTER.add_argument('--to-picl', action='store_true', help="Dump as a Pickled object")
+PRINTER.add_argument('--to-yaml', action='store_true', help="Dump as a YAML object")
+PRINTER.add_argument('--to-json', action='store_true', help="Dump as a JSON object")
+
 ARGS = PARSER.parse_args()
 
-DATA = open(ARGS.file, 'rb')
-STEM = pathlib.Path(ARGS.file).stem
+if ARGS.file:
+    DATA = open(ARGS.file, 'rb')
+    STEM = pathlib.Path(ARGS.file).stem
+else:
+    DATA = sys.stdin
 
 # Parse the file with the chosen Loader method
 if ARGS.ast:
@@ -48,6 +53,8 @@ elif ARGS.yaml:
     RESULTS = yaml.safe_load(DATA.read())
 elif ARGS.pickle:
     RESULTS = pickle.load(DATA)
+elif ARGS.html:
+    RESULTS = bs4.BeautifulSoup(DATA.read(), "html.parser")
 elif ARGS.config:
     RESULTS = configparser.ConfigParser()
     RESULTS.read(ARGS.file)

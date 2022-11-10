@@ -14,11 +14,13 @@ pp = pprint.PrettyPrinter()
 
 def getOpts():
     parser = argparse.ArgumentParser(description='github api caller')
-    parser.add_argument('-l', '--login', required=True, help="login user")
     parser.add_argument('-t', '--tokenfile', required=True, help="tokenfile")
 
-    searcher = parser.add_mutually_exclusive_group(required=True)
-    searcher.add_argument('-q', '--query', help="Jira API Query String")
+    action = parser.add_mutually_exclusive_group(required=True)
+    action.add_argument('-g', '--get', help="Jira API Get + Query string")
+    action.add_argument('-p', '--post', help="Jira API Put + Query string")
+    action.add_argument('-u', '--put', help="Jira API Put + Query string")
+    action.add_argument('-d', '--delete', help="Jira API Put + Query string")
     
     output = parser.add_mutually_exclusive_group()
     output.add_argument('-J', '--j2', help="jinja2 formatting string")
@@ -45,19 +47,26 @@ def main () :
     }
     s.headers.update(headers)
 
-    if args.query:
-        results = s.get("%s/%s"%(url, args.query)).json()
-        if args.outfile:
-            json.dump(results, open(args.outfile, "w+"))
+    if args.get:
+        results = s.get("%s/%s"%(url, args.get)).json()
+    if args.post:
+        results = s.put("%s/%s"%(url, args.post)).json()
+    if args.put:
+        results = s.put("%s/%s"%(url, args.put)).json()
+    if args.delete:
+        results = s.put("%s/%s"%(url, args.delete)).json()
+
+    if args.outfile:
+        json.dump(results, open(args.outfile, "w+"))
+    else:
+        if args.j2:
+            t = jinja2.Template(args.j2)
+            print(t.render(result=result))
+        elif args.formatted:
+            pp = pprint.PrettyPrinter()
+            pp.pprint(results)
         else:
-            if args.j2:
-                t = jinja2.Template(args.j2)
-                print(t.render(result=result))
-            elif args.formatted:
-                pp = pprint.PrettyPrinter()
-                pp.pprint(results)
-            else:
-                print(results)
+            print(results)
 
 
 if __name__ == "__main__":

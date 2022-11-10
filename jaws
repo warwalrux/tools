@@ -4,11 +4,10 @@ import base64
 import requests
 import json
 import sys
-import jinja2
 import time
 import pprint
+import jinja2
 
-github_timewait = 60
 url="https://issues.apache.org/jira/rest/api/latest"
 pp = pprint.PrettyPrinter()
 
@@ -63,7 +62,6 @@ def main () :
             t = jinja2.Template(args.j2)
             print(t.render(result=result))
         elif args.formatted:
-            pp = pprint.PrettyPrinter()
             pp.pprint(results)
         else:
             print(results)

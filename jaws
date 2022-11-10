@@ -53,14 +53,18 @@ def main () :
     if args.put:
         results = s.put("%s/%s"%(url, args.put)).json()
     if args.delete:
-        results = s.put("%s/%s"%(url, args.delete)).json()
+        r = input("Are you sure you want to run a delete operation?[Y]: ")
+        if r != "Y":
+            sys.exit(0)
+        else:
+            results = s.put("%s/%s"%(url, args.delete)).json()
 
     if args.outfile:
         json.dump(results, open(args.outfile, "w+"))
     else:
         if args.j2:
             t = jinja2.Template(args.j2)
-            print(t.render(result=result))
+            print(t.render(data=results))
         elif args.formatted:
             pp.pprint(results)
         else:

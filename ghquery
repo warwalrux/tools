@@ -14,26 +14,31 @@ pp = pprint.PrettyPrinter()
 def getOpts():
     parser = argparse.ArgumentParser(description='github api caller')
     parser.add_argument('-t', '--tokenfile', help="github API token")
+    parser.add_argument('-p', '--pagedata', help="GraphQL pagination data path")
 
     searcher = parser.add_mutually_exclusive_group(required=True)
     searcher.add_argument('-q', '--api', help="GitHub API Query String")
     searcher.add_argument('-Q', '--gql', help="GraphQL API Query String")
-
+    
     output = parser.add_mutually_exclusive_group()
-    output.add_argument('-j', '--j2', help="jinja2 formatting string")
+    output.add_argument('-J', '--j2', help="jinja2 formatting string")
     output.add_argument('-o', '--outfile', help="dump raw data to file")
     args = parser.parse_args()
 
     return args
 
 def queryGH (session, query):
-    # Determine how many pages of results we're looking at
+    # pages object 
     results = {}
 
+    # fetch page 1
     r = session.get(url + "/search/code?per_page=100&page=1&q=%s" % query)
     res = r.json()
     pagenum = 1
+    # stuff page 1 results into results
     results['Page%s'%(pagenum)] = res
+
+    # if there's a next page, do it all again.
     while 'next' in r.links.keys():
         pagenum+=1
         print("Success! moving on...")
@@ -41,39 +46,21 @@ def queryGH (session, query):
         r = session.get(r.links['next']['url'])
         res = r.json()
         results['Page%s'%(pagenum)] = res
-
-
-#    if hasattr(r, "headers") and "link" in r["headers"]:
-#        results['Page1'] = res
-#        pages = int(results['Page1']["headers"]['link'].split(',')[1].split(';')[0].split('=')[-1].strip('>')) + 1
-#        # r = []
-#        for x in range(1, pages):
-#            results['Page' + str(x)] = requests.get(url + "/search/code?p=%s&per_page=100&q=%s" % (x,query)).json()
-#    else:
-#        results = r
-
-#    for key in results.keys():
-#        for item in results[key]:
-#            print(item)
-                #repos.append(repo.get('name'))
-#    return repos
-
-#    if hasattr(t, "links") and "next" in t.links:
-#        page = 1
-#        results["page%s"%str(page)]
-#    print(t.links)
-
-#    if t.json()["incomplete_results"]:
-#        print("Incomplete result set delivered.")
-#    else:
-#        results = t.json()
-
-#    print(results)
-#    results["results"] = results["items"]
-#    results.pop("items")
     return results
 
-def GQLQueryGH (session, query):
+def _find_page_info(context):
+    if isinstance(context, dict):
+        if "pageInfo" in context.keys():
+            return context["pageInfo"]
+        elif len(context.keys()) == 1:
+            ck = [ key for key in context.keys() ]
+            _find_page_info(context[ck[0]])
+        else:
+            return none
+    else:
+        return none
+
+def GQLQueryGH (session, query, pagedata=None):
     results = []
     # Access token as {{ token }}
     q = jinja2.Template(query)
@@ -81,21 +68,21 @@ def GQLQueryGH (session, query):
     after = "null"
     while nextPage:
         t = session.post(url + "/graphql", json={"query": q.render(after=after)}).json()
+        print(_find_page_info(t))
+        nextPage = False
 #        after = (
 #            '"%s"'
-#            % t.json()["data"]["organization"]["membersWithRole"]["pageInfo"][
-#                "endCursor"
-#            ]
+#            % t.json()["data"]
 #        )
-        try:
-            nextPage = t["data"]["organization"]["repositories"]["pageInfo"]["endCursor"]["hasNextPage"]
-        except KeyError:
-            print("Nothing Doing... Taking a nap")
-            time.sleep(15)
+#        try:
+#            nextPage = t["data"]["organization"]["repositories"]["pageInfo"]["endCursor"]["hasNextPage"]
+#        except KeyError:
+#            print("Nothing Doing... Taking a nap")
+#            time.sleep(15)
+#
+#            GQLQueryGH(session, query)
 
-            GQLQueryGH(session, query)
-
-        results.append(t)
+    results.append(t)
     
     return results
 
@@ -125,7 +112,7 @@ def main () :
                     print(json.dumps(result))
         print("Total Results: %s" % results["total_count"])
     elif args.gql:
-        results = GQLQueryGH(s, args.gql)
+        results = GQLQueryGH(s, args.gql, args.pagedata)
 
         if args.outfile:
             json.dump(results, open(args.outfile, "w+"))

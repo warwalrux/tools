@@ -14,7 +14,6 @@ pp = pprint.PrettyPrinter()
 def getOpts():
     parser = argparse.ArgumentParser(description='github api caller')
     parser.add_argument('-t', '--tokenfile', help="github API token")
-    parser.add_argument('-p', '--pagedata', help="GraphQL pagination data path")
 
     searcher = parser.add_mutually_exclusive_group(required=True)
     searcher.add_argument('-q', '--api', help="GitHub API Query String")
@@ -48,7 +47,7 @@ def queryGH (session, query):
         esults['Page%s'%(pagenum)] = res
     return results
 
-def _find_page_info(context):
+def find_page_info(context):
     if isinstance(context, dict):
         if "pageInfo" in context.keys():
             print("found it!")
@@ -57,9 +56,13 @@ def _find_page_info(context):
             print("looking...")
             if len(context.keys()) == 1:
                 ck = [ key for key in context.keys() ]
-                _find_page_info(context[ck[0]])
-
-def GQLQueryGH (session, query, pagedata=None):
+                find_page_info(context[ck[0]])
+            else:
+                pass
+    else:
+        pass
+    
+def GQLQueryGH (session, query):
     results = []
     # Access token as {{ token }}
     q = jinja2.Template(query)
@@ -67,7 +70,7 @@ def GQLQueryGH (session, query, pagedata=None):
     after = "null"
     while nextPage:
         t = session.post(url + "/graphql", json={"query": q.render(after=after)}).json()
-        print(_find_page_info(t))
+        print(find_page_info(t))
         nextPage = False
 #        after = (
 #            '"%s"'
@@ -111,7 +114,7 @@ def main () :
                     print(json.dumps(result))
         print("Total Results: %s" % results["total_count"])
     elif args.gql:
-        results = GQLQueryGH(s, args.gql, args.pagedata)
+        results = GQLQueryGH(s, args.gql)
 
         if args.outfile:
             json.dump(results, open(args.outfile, "w+"))

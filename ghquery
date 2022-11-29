@@ -58,8 +58,6 @@ def _find_page_info(context):
             if len(context.keys()) == 1:
                 ck = [ key for key in context.keys() ]
                 _find_page_info(context[ck[0]])
-            else:
-                return None
 
 def GQLQueryGH (session, query, pagedata=None):
     results = []

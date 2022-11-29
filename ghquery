@@ -45,20 +45,22 @@ def queryGH (session, query):
         time.sleep(github_timewait)
         r = session.get(r.links['next']['url'])
         res = r.json()
-        results['Page%s'%(pagenum)] = res
+        esults['Page%s'%(pagenum)] = res
     return results
 
 def _find_page_info(context):
     if isinstance(context, dict):
         if "pageInfo" in context.keys():
-            return context["pageInfo"]
-        elif len(context.keys()) == 1:
-            ck = [ key for key in context.keys() ]
-            _find_page_info(context[ck[0]])
+            print("found it!")
+            print(context.keys())
+            return getattr(context, "pageInfo")
         else:
-            return none
-    else:
-        return none
+            print("looking...")
+            if len(context.keys()) == 1:
+                ck = [ key for key in context.keys() ]
+                _find_page_info(context[ck[0]])
+            else:
+                return None
 
 def GQLQueryGH (session, query, pagedata=None):
     results = []

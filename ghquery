@@ -52,8 +52,7 @@ def _find_page_info(context):
     if isinstance(context, dict):
         if "pageInfo" in context.keys():
             print("found it!")
-            print(context.keys())
-            return getattr(context, "pageInfo")
+            return context.get("pageInfo", {})
         else:
             print("looking...")
             if len(context.keys()) == 1:

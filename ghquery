@@ -8,26 +8,28 @@ import time
 import pprint
 
 github_timewait = 60
-url="https://api.github.com"
+url = "https://api.github.com"
 pp = pprint.PrettyPrinter()
 
+
 def getOpts():
-    parser = argparse.ArgumentParser(description='github api caller')
-    parser.add_argument('-t', '--tokenfile', help="github API token")
+    parser = argparse.ArgumentParser(description="github api caller")
+    parser.add_argument("-t", "--tokenfile", help="github API token")
 
     searcher = parser.add_mutually_exclusive_group(required=True)
-    searcher.add_argument('-q', '--api', help="GitHub API Query String")
-    searcher.add_argument('-Q', '--gql', help="GraphQL API Query String")
-    
+    searcher.add_argument("-q", "--api", help="GitHub API Query String")
+    searcher.add_argument("-Q", "--gql", help="GraphQL API Query String")
+
     output = parser.add_mutually_exclusive_group()
-    output.add_argument('-J', '--j2', help="jinja2 formatting string")
-    output.add_argument('-o', '--outfile', help="dump raw data to file")
+    output.add_argument("-J", "--j2", help="jinja2 formatting string")
+    output.add_argument("-o", "--outfile", help="dump raw data to file")
     args = parser.parse_args()
 
     return args
 
-def queryGH (session, query):
-    # pages object 
+
+def queryGH(session, query):
+    # pages object
     results = {}
 
     # fetch page 1
@@ -35,70 +37,64 @@ def queryGH (session, query):
     res = r.json()
     pagenum = 1
     # stuff page 1 results into results
-    results['Page%s'%(pagenum)] = res
+    results["Page%s" % (pagenum)] = res
 
     # if there's a next page, do it all again.
-    while 'next' in r.links.keys():
-        pagenum+=1
+    while "next" in r.links.keys():
+        pagenum += 1
         print("Success! moving on...")
         time.sleep(github_timewait)
-        r = session.get(r.links['next']['url'])
+        r = session.get(r.links["next"]["url"])
         res = r.json()
-        esults['Page%s'%(pagenum)] = res
+        results["Page%s" % (pagenum)] = res
     return results
+
 
 def find_page_info(context):
     if isinstance(context, dict):
         if "pageInfo" in context.keys():
-            print("found it!")
             return context.get("pageInfo", {})
         else:
-            print("looking...")
             if len(context.keys()) == 1:
-                ck = [ key for key in context.keys() ]
-                find_page_info(context[ck[0]])
+                ck = [key for key in context.keys()]
+                return(find_page_info(context[ck[0]]))
             else:
                 pass
     else:
         pass
-    
-def GQLQueryGH (session, query):
+
+
+def GQLQueryGH(session, query, after=0):
     results = []
     # Access token as {{ token }}
     q = jinja2.Template(query)
     nextPage = True
-    after = "null"
     while nextPage:
         t = session.post(url + "/graphql", json={"query": q.render(after=after)}).json()
-        print(find_page_info(t))
-        nextPage = False
-#        after = (
-#            '"%s"'
-#            % t.json()["data"]
-#        )
-#        try:
-#            nextPage = t["data"]["organization"]["repositories"]["pageInfo"]["endCursor"]["hasNextPage"]
-#        except KeyError:
-#            print("Nothing Doing... Taking a nap")
-#            time.sleep(15)
-#
-#            GQLQueryGH(session, query)
+        try:
+            nextPage = find_page_info(t)["hasNextPage"]
+        except KeyError: 
+            print("Nothing Doing... Taking a nap")
+            sys.exit(0)
+        print(f"Success (page {after+1}), moving on...")
+        time.sleep(1)
+        GQLQueryGH(session, query, after+1)
 
     results.append(t)
-    
     return results
 
-def main () :
+
+def main():
     args = getOpts()
-    
+
     # Check token stuffs
-    if not args.tokenfile: 
+    if not args.tokenfile:
         print("No token provided")
         sys.exit(1)
-    token_file = open(args.tokenfile,"r")
+    token_file = open(args.tokenfile, "r")
     my_token = token_file.readlines()[0].rstrip()
     s = requests.Session()
-    s.headers.update({ 'Authorization': 'token ' + my_token})
+    s.headers.update({"Authorization": "token " + my_token})
 
     if args.api:
         s.headers.update({"content-type": "text"})

@@ -15,7 +15,7 @@ def getOpts():
     parser.add_argument("-o", "--org", help="repo owner")
     parser.add_argument("-r", "--repo", help="token file")
     parser.add_argument("-f", "--format", action="store_true", help="formatted output")
-    parser.add_argument("-j", "--j2", help="Jinja2 formatted output")
+    parser.add_argument("-J", "--j2", help="Jinja2 formatted output")
     args = parser.parse_args()
     return args
 

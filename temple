@@ -13,4 +13,7 @@ ARGS = PARSER.parse_args()
 DATA = yaml.safe_load(open(ARGS.datafile, 'rb').read())
 
 TEMPLATE = jinja2.Template(open(ARGS.template, 'r').read())
-print(TEMPLATE.render(data=DATA))
+if ARGS.outfile:
+    open(ARGS.outfile, "w+").write(TEMPLATE.render(data=DATA))
+else:
+    print(TEMPLATE.render(data=DATA))

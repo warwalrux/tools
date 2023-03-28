@@ -3,7 +3,7 @@ EXIF=$(which exif)
 evaldir=$(pwd)
 
 # Rename all of the wonky uppercase JPG files to standardize the file endings.
-find $evaldir -name "*.JPG" -exec bash -c 'mv "$0" "${0//JPG/jpg/}"' {} \;
+find $evaldir -name "*.JPG" -exec bash -c 'mv "$0" "${0//JPG/jpg}"' {} \;
 
 if [[ "$1" == "exif" ]]; then
     for x in `IFS=$'\n' ls $evaldir/*.jpg`; do

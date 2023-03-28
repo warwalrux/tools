@@ -1,4 +1,5 @@
 #!/bin/expect -f
+# Requires `export user_cred=/path/to/credfile` to run
 set timeout -1
 #log_user 0
 proc slurp {file} {
@@ -7,7 +8,7 @@ proc slurp {file} {
     close $fh
     return $ret
 }
-set passwd [slurp ~/.$::env(USER).cred]
+set passwd [slurp $::env(user_cred)]
 spawn donkeyrunner $argv
 expect "Enter passphrase : "
 send -- "$passwd\r"

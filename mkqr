@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+import segno
+import sys
+import argparse
+
+parser = argparse.ArgumentParser(description="QR Code Generator")
+parser.add_argument("-s", "--scale", default=5, help="Modscale in px")
+parser.add_argument("-n", "--name", default="qr_out.png", help="QR output file")
+
+args = parser.parse_args()
+
+segno.make_qr(sys.stdin.readlines()).save(args.name+".png", scale=args.scale)

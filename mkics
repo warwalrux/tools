@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+from ics import Calendar, Event
+import argparse
+
+parser = argparse.ArgumentParser(description="Make ICS one off ICS files")
+parser.add_argument("-n", "--filename", default="event", help="ICS Filename")
+parser.add_argument("-o", "--stdout", default=False, help="Print to stdout")
+c = Calendar()
+e = Event()
+
+e.name = input("Event Name: ")
+e.begin = input("Start date (YYY-MM-DD hh:mm:ss): ")
+e.end = input("End (YYYY-MM-DD hh:mm:ss): ")
+e.description = input("Description: ")
+e.location = input("Location: ")
+e.url = input("URL: ")
+e.organizer = input("Organizer: ")
+
+c.events.add(e)
+
+if args.stdout:
+    print(c.serialize_iter())
+
+elif args.filename:
+    with open(filename+".ics", 'w') as f:
+        f.writelines(c.serialize_iter())

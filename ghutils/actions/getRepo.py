@@ -35,7 +35,7 @@ def main():
         sys.exit(1)
     token_file = open(args.tokenfile, "r")
     my_token = token_file.readlines()[0].rstrip()
-    head = {"Authorization": "token " + my_token}
+    head = {"Authorization": "Bearer " + my_token}
 
     # Group we've chosen to grant read write access to for the new org.
     if not args.repo:

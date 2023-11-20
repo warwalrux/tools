@@ -8,7 +8,7 @@ proc slurp {file} {
     close $fh
     return $ret
 }
-set passwd [slurp $::env(user_cred)]
+set passwd [slurp $::env($::env(USER)_cred)]
 spawn donkeyrunner $argv
 expect "Enter passphrase : "
 send -- "$passwd\r"

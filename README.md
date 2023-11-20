@@ -66,3 +66,11 @@ pic-sort is a script that leverages exif utilities and and heic converter to ren
 organize jpg and heic files. for instructions: run the script with no arguments.
 
 REQUIRES: exif, heif-gdk-pixbuf
+
+### mkics
+
+mkics is a ICS file creator with a prompt that will generate a potrable .ics file
+
+### mkqr
+
+mkqr generates QR codes.

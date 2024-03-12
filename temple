@@ -3,14 +3,22 @@
 import argparse
 import jinja2
 import yaml
+import sys
 
 PARSER = argparse.ArgumentParser()
 PARSER.add_argument('-t', '--template', help="template file")
-PARSER.add_argument('-f', '--datafile', help="data file")
+PARSER.add_argument('-f', '--datafile', help="data file", default=False)
+PARSER.add_argument('-d', '--data', help="JSON data")
 PARSER.add_argument('-o', '--outfile', help="output file")
 ARGS = PARSER.parse_args()
 
-DATA = yaml.safe_load(open(ARGS.datafile, 'rb').read())
+if ARGS.datafile:
+    DATA = yaml.safe_load(open(ARGS.datafile, 'rb').read())
+elif ARGS.data:
+    DATA = yaml.safe_load(ARGS.data)
+else:
+    print("No data provided.")
+    sys.exit(1)
 
 TEMPLATE = jinja2.Template(open(ARGS.template, 'r').read())
 if ARGS.outfile:

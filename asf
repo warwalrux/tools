@@ -81,5 +81,5 @@ elif [[ "$1" == "list" ]]; then
 #
 else
 	hostname="$1.apache.org"
-	ssh -A $hostname
+	ssh -i $HOME/.ssh/id_rsa -o 'PubkeyAcceptedKeyTypes +ssh-rsa' -A $hostname
 fi

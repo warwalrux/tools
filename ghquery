@@ -14,7 +14,8 @@ pp = pprint.PrettyPrinter()
 
 def getOpts():
     parser = argparse.ArgumentParser(description="github api caller")
-    parser.add_argument("-t", "--tokenfile", help="github API token")
+    parser.add_argument("-t", "--token", help="github API token")
+    parser.add_argument("-d", "--dump", action='store_true', help="dump response object to file")
 
     searcher = parser.add_mutually_exclusive_group(required=True)
     searcher.add_argument("-q", "--api", help="GitHub API Query String")
@@ -88,11 +89,12 @@ def main():
     args = getOpts()
 
     # Check token stuffs
-    if not args.tokenfile:
+    if not args.token:
         print("No token provided")
         sys.exit(1)
-    token_file = open(args.tokenfile, "r")
-    my_token = token_file.readlines()[0].rstrip()
+#    token_file = open(args.tokenfile, "r")
+#    my_token = token_file.readlines()[0].rstrip()
+    my_token = args.token
     s = requests.Session()
     s.headers.update({"Authorization": "token " + my_token})
 
@@ -102,6 +104,7 @@ def main():
         if args.outfile:
             json.dump(results, open(args.outfile, "w+"))
         else:
+            print(results)
             for result in results["results"]:
                 if args.j2:
                     t = jinja2.Template(args.j2)
@@ -111,6 +114,8 @@ def main():
         print("Total Results: %s" % results["total_count"])
     elif args.gql:
         results = GQLQueryGH(s, args.gql)
+        if args.dump:
+            json.dump(results, open(dumpfile, "w+"))
 
         if args.outfile:
             json.dump(results, open(args.outfile, "w+"))

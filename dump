@@ -15,7 +15,7 @@ import sys
 
 import jinja2
 
-PP = pprint.PrettyPrinter()
+PP = pprint.PrettyPrinter(indent=4)
 
 PARSER = argparse.ArgumentParser()
 PARSER.add_argument('-f', '--file', help="input file")

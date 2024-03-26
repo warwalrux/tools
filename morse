@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+import argparse
+import sys
+import ast
+import re
+
+class Morse():
+    def __init__(self, args):
+        self.dit = "."
+        self.dah = "-"
+        self.sep = args.separator
+        self.mkey = {
+	        'A': [self.dit, self.dah],
+	        'B': [self.dah, self.dit, self.dit, self.dit],
+	        'C': [self.dah, self.dit, self.dah, self.dit],
+	        'D': [self.dah, self.dit, self.dit],
+	        'E': [self.dit],
+	        'F': [self.dit, self.dit, self.dah, self.dit],
+	        'G': [self.dah, self.dah, self.dit],
+            'H': [self.dit, self.dit, self.dit, self.dit],
+            'I': [self.dit, self.dit],
+            'J': [self.dit, self.dah, self.dah, self.dah],
+            'L': [self.dit, self.dah, self.dit, self.dit],
+            'M': [self.dah, self.dah],
+            'N': [self.dah, self.dit],
+            'O': [self.dah, self.dah, self.dah],
+            'P': [self.dit, self.dah, self.dah, self.dit],
+            'Q': [self.dah, self.dah, self.dit, self.dah],
+            'R': [self.dit, self.dah, self.dit],
+            'S': [self.dit, self.dit, self.dit],
+            'T': [self.dah],
+            'U': [self.dit, self.dit, self.dah],
+            'V': [self.dit, self.dit, self.dit, self.dah],
+            'W': [self.dit, self.dah, self.dah],
+            'X': [self.dah, self.dit, self.dit, self.dah],
+            'Y': [self.dah, self.dit, self.dah, self.dah],
+            'Z': [self.dah, self.dah, self.dit, self.dit],
+            '0': [self.dah, self.dah, self.dah, self.dah, self.dah],
+            '1': [self.dit, self.dah, self.dah, self.dah, self.dah],
+            '2': [self.dit, self.dit, self.dah, self.dah, self.dah],
+            '3': [self.dit, self.dit, self.dit, self.dah, self.dah],
+            '4': [self.dit, self.dit, self.dit, self.dit, self.dah],
+            '5': [self.dit, self.dit, self.dit, self.dit, self.dit],
+            '6': [self.dah, self.dit, self.dit, self.dit, self.dit],
+            '7': [self.dah, self.dah, self.dit, self.dit, self.dit],
+            '8': [self.dah, self.dah, self.dah, self.dit, self.dit],
+            '9': [self.dah, self.dah, self.dah, self.dah, self.dit],
+            }
+
+    def encode(self, content):
+        plain = list(content)
+        encoded = []
+        for c in plain:
+            if re.match(" ", c):
+                encoded.append(self.sep)
+            else:
+                encoded.append(self.mkey[c.upper()])
+        return encoded
+
+    def decode(self, cipher):
+        encoded = self.desequence(cipher)
+        plain = []
+        for c in encoded:
+            if re.match(self.sep, ''.join(c)):
+                plain.append(" ")
+            else:
+                plain.append(list(self.mkey.keys())[list(self.mkey.values()).index(c)])
+        return plain
+
+    def sequence(self, seq):
+        return [ ''.join(s) for s in seq ]
+
+    def desequence(self, seq):
+        return [ list(s) for s in seq.split(" ") ]
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    m_opts = parser.add_mutually_exclusive_group(required=True)
+    m_opts.add_argument('-e', '--encode', action='store_true', help="To Morse")
+    m_opts.add_argument('-d', '--decode', action='store_true', help="From Morse")
+    parser.add_argument('-m', '--message', help="Message", default=[])
+    parser.add_argument('-s', '--separator', help="Separator character", default=" ")
+    parser.add_argument('-r', '--raw', help="Print raw list of chars", action="store_true")
+    args = parser.parse_args()
+    
+    m = Morse(args)
+    
+    if args.encode:
+        output = m.encode(args.message)
+        if args.raw:
+            print(output)
+        else:
+            print(' '.join([ ''.join(s) for s in output ]))
+
+    if args.decode:
+        output = m.decode(args.message)
+        if args.raw:
+            print(output)
+        else:
+            print(''.join(output))
+        
+

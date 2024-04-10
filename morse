@@ -20,6 +20,7 @@ class Morse():
             'H': [self.dit, self.dit, self.dit, self.dit],
             'I': [self.dit, self.dit],
             'J': [self.dit, self.dah, self.dah, self.dah],
+            'K': [self.dah, self.dit, self.dah],
             'L': [self.dit, self.dah, self.dit, self.dit],
             'M': [self.dah, self.dah],
             'N': [self.dah, self.dit],
